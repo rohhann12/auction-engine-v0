@@ -1,0 +1,32 @@
+{
+  "name": "trace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -b && cp src/generated/prisma/index.js src/generated/prisma/index-browser.js src/generated/prisma/default.js src/generated/prisma/edge.js src/generated/prisma/query_engine_bg.js src/generated/prisma/wasm.js src/generated/prisma/query_engine_bg.wasm src/generated/prisma/libquery_engine-darwin-arm64.dylib.node src/generated/prisma/package.json dist/generated/prisma/ && cp -r src/generated/prisma/runtime dist/generated/prisma/",
+    "seed": "npx tsx src/prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "npx tsx src/prisma/seed.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@prisma/client": "^6.4.2",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "ioredis": "^5.10.0",
+    "prisma": "^6.4.2",
+    "redis": "^5.11.0",
+    "socket.io": "^4.8.3",
+    "uuid": "^13.0.0",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6"
+  }
+}

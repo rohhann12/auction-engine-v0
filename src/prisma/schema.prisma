@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url="postgresql://postgres:postgres@localhost:5432/trace"
+}
+
+enum Roles{
+  buyer
+  seller
+}
+
+model user{
+  id String  @unique @default(uuid()) @id
+  bids String[] 
+  orders  String[]
+  active Boolean
+  userBids bids[]
+  role Roles
+  isOwner Boolean @default(false)
+  //forgot how to add mapping
+}
+
+model bids{
+  id String @unique @default(uuid()) @id
+  productId String 
+  price   Int 
+  userActivity  user?  @relation(fields:[userId],references:[id]) 
+  userId String
+}
+
+model product{
+  productId String @unique @default(uuid()) @id
+  minPrice Int
+  ownerId  String
+  soldForPrice Int
+  images        String?
+}
