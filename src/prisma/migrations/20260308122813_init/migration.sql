@@ -6,7 +6,7 @@ ALTER TABLE "bids" ADD CONSTRAINT "bids_pkey" PRIMARY KEY ("id");
 
 -- AlterTable
 ALTER TABLE "product" ADD COLUMN     "images" TEXT,
-ADD CONSTRAINT "product_pkey" PRIMARY KEY ("productId");
+ADD CONSTRAINT "product_pkey" PRIMARY KEY ("roomId");
 
 -- AlterTable
 ALTER TABLE "user" ADD CONSTRAINT "user_pkey" PRIMARY KEY ("id");

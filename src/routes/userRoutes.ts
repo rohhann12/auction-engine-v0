@@ -1,6 +1,6 @@
 import express from 'express'
-import prisma from '../manager/prisma.js'
-import { redisManager } from '../manager/redis.js'
+import prisma from '../common/prismaInit.js'
+import { redisManager } from '../common/redisManager.js'
 
 const route = express.Router()
 
@@ -11,11 +11,11 @@ route.get("/", async (req: any, res: any) => {
     res.json(list)
 })
 
-route.get("/product/:productId", async (req: any, res: any) => {
-    const productId = req.params.productId
+route.get("/:roomId", async (req: any, res: any) => {
+    const roomId = req.params.roomId
     const details = await prisma.product.findUnique({
         where: {
-            productId
+            roomId
         }
     })
     console.log("details", details)
@@ -23,10 +23,16 @@ route.get("/product/:productId", async (req: any, res: any) => {
 })
 
 
-route.post("/product/:productId/order",async(req:any,res:any)=>{
-    const {productId,price,productName,buyerId,buyerName,ownerId,ownerName}=req.body
-    const pushOrder=await redisManager.getInstance().addOrder(productId,price,productName,buyerId,buyerName,ownerId,ownerName)
-    
+route.post("/:roomId/order",async(req:any,res:any)=>{
+    const roomId=req.params.roomId
+    const {price,productName,buyerId,buyerName,ownerId,ownerName}=req.body
+    console.log("bidding with these details",{roomId,price,productName,buyerId,buyerName,ownerId,ownerName})
+    const pushOrder=await redisManager.getInstance().addOrder(productName,roomId,price,buyerId,buyerName,ownerId,ownerName)
+    if(!pushOrder){
+        res.json({message:"order not placed"})
+    }else{
+        res.json({message:"order placed"})
+    }
 })
 
 export default route

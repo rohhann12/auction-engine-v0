@@ -32,14 +32,14 @@ model user{
 
 model bids{
   id String @unique @default(uuid()) @id
-  productId String 
+  roomId String 
   price   Int 
   userActivity  user?  @relation(fields:[userId],references:[id]) 
   userId String
 }
 
 model product{
-  productId String @unique @default(uuid()) @id
+  roomId String @unique @default(uuid()) @id
   minPrice Int
   ownerId  String
   soldForPrice Int

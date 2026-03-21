@@ -1,3 +1,5 @@
+add bots to send request onto this so as to show concurrency and how the platform works
+
 trying to code this up in nodejs as initial step will migrate parts of to golang -- undesrtand channels and goroutines and how does locking really does work 
 
 

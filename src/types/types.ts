@@ -1,5 +1,5 @@
 export interface Bids{
-    productId:string,
+    roomId:string,
     price:number,
     productName:string,
     ownerName:string,
@@ -7,7 +7,6 @@ export interface Bids{
     buyerName:string,
     buyerId:string
 }
-
 
 export type ORDER_ACCEPTED="ORDER_ACCEPTED"
 export type ORDER_REJECTED="ORDER_REJECTED"

@@ -14,14 +14,14 @@ CREATE TABLE "user" (
 -- CreateTable
 CREATE TABLE "bids" (
     "id" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
+    "roomId" TEXT NOT NULL,
     "price" INTEGER NOT NULL,
     "userId" TEXT NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "product" (
-    "productId" TEXT NOT NULL,
+    "roomId" TEXT NOT NULL,
     "minPrice" INTEGER NOT NULL,
     "ownerId" TEXT NOT NULL,
     "soldForPrice" INTEGER NOT NULL
@@ -34,10 +34,10 @@ CREATE UNIQUE INDEX "user_id_key" ON "user"("id");
 CREATE UNIQUE INDEX "bids_id_key" ON "bids"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "bids_productId_key" ON "bids"("productId");
+CREATE UNIQUE INDEX "bids_productId_key" ON "bids"("roomId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "product_productId_key" ON "product"("productId");
+CREATE UNIQUE INDEX "product_productId_key" ON "product"("roomId");
 
 -- AddForeignKey
 ALTER TABLE "bids" ADD CONSTRAINT "bids_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
-
+frontend/
+.claude/
 # Build output
 dist/
 
