@@ -19,15 +19,19 @@ ws.on('message',(data:any)=>{
         userManager.getInstance().leaveRoom(uuid,message.roomId)
     }else if(message.type==="message"){
         try {
-            // console.log("mes",message)
             const dataParse=(message.data)
             userManager.getInstance().sendMessage(uuid,dataParse)
-            // console.log("data",dataParse)
         } catch (error) {
             console.log("err",error)
         }
     }else if(message.type==="close"){
         userManager.getInstance().killUser(uuid)
+    }else if(message.type==="cancelOrder"){
+        try {
+            userManager.getInstance().UsercancelOrder(uuid,message)
+        } catch (error) {
+            console.log("err",error)
+        }
     }
 })
 });

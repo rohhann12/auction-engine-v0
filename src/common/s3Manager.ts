@@ -13,22 +13,37 @@ const s3 = new S3Client({
 const BUCKET = process.env.S3_BUCKET_NAME!
 
 export async function uploadImage(buffer: Buffer, mimetype: string): Promise<string> {
-    const key = `listings/${randomUUID()}`
-    await s3.send(new PutObjectCommand({
-        Bucket: BUCKET,
-        Key: key,
-        Body: buffer,
-        ContentType: mimetype
-    }))
-    return `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
+    try {
+        const key = `listings/${randomUUID()}`
+        await s3.send(new PutObjectCommand({
+            Bucket: BUCKET,
+            Key: key,
+            Body: buffer,
+            ContentType: mimetype
+        }))
+        return `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
+    } catch (error) {
+        console.log("err uploadImage", error)
+        throw error
+    }
 }
 
 export async function deleteImage(url: string): Promise<void> {
-    const key = url.split('.amazonaws.com/')[1]
-    if (!key) return
-    await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }))
+    try {
+        const key = url.split('.amazonaws.com/')[1]
+        if (!key) return
+        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }))
+    } catch (error) {
+        console.log("err deleteImage", error)
+        throw error
+    }
 }
 
 export async function getPresignedUrl(key: string, expiresIn = 3600): Promise<string> {
-    return getSignedUrl(s3, new PutObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn })
+    try {
+        return getSignedUrl(s3, new PutObjectCommand({ Bucket: BUCKET, Key: key }), { expiresIn })
+    } catch (error) {
+        console.log("err getPresignedUrl", error)
+        throw error
+    }
 }
