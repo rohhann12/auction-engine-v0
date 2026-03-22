@@ -1,0 +1,3 @@
+->db incremental logic-
+->stream data to the user logic
+->txn logic for failed

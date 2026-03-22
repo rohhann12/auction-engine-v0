@@ -11,3 +11,6 @@ export interface Bids{
 export type ORDER_ACCEPTED="ORDER_ACCEPTED"
 export type ORDER_REJECTED="ORDER_REJECTED"
 export type ORDER_PENDING="ORDER_PENDING"
+// TO-DO
+// FOR FAILURES USE THIS FLAG
+export type IOC="IOC"

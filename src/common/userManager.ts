@@ -3,10 +3,10 @@ import type { Bids } from "../types/types.js"
 import { redisManager } from "./redisManager.js"
 export class userManager{
     private static instance:userManager
-    private users:Map<string,Object>
+private userRoomSessions:Map<string,string[]>
 
     private constructor(){
-        this.users=new Map()
+        this.userRoomSessions=new Map()
     }
 
     public static getInstance(){
@@ -17,16 +17,20 @@ export class userManager{
     }
 
     public addUser(uuid:string,connection:WebSocket,roomId:string){
-        console.log("this.users before appending",this.users)
-        this.users.set(uuid,{roomId:roomId,userSocket:connection})
-        console.log("this.users after appending",this.users)
+        console.log("this.users before appending",this.userRoomSessions)
+        this.userRoomSessions.set(uuid,[roomId])
+        console.log("this.users after appending",this.userRoomSessions)
     }
     
-    public removeUser(uuid:string,roomId:String){
-
+    public leaveRoom(uuid:string,roomId:String){
+        const getArr=this.userRoomSessions.get(uuid)
+        console.log("before removing",getArr)
+        const removeArr=getArr?.filter((r)=>r!==roomId)
+        console.log("removed user",removeArr)
+        const leaveRoom=this.userRoomSessions.set(uuid,removeArr||[])
     }
     public killUser(uuid:string){
-
+        const removeUser=this.userRoomSessions.set(uuid,[]);
     }
     public async sendMessage(uuid:string,message:Bids){
         // send order to the addOrder in the redisManager where trades happen

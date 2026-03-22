@@ -100,6 +100,7 @@ export class redisManager{
         if(price>this.current_price){
             // stream back to socket to taht user
             // WE HAVE THE TYPE export type ORDER_REJECTED="ORDER_REJECTED"
+            // TO-DO ADD DB CALL HERE 
             console.log("state of bid old",bid)
             this.bids.set(key,bid)
             console.log("state of bid updated",bid)

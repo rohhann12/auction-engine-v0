@@ -1,6 +1,9 @@
 import 'dotenv/config'
 import express from 'express'
-import userRoutes from './routes/userRoutes.js'
+import userRoutes from './routes/buyerRoutes.js'
+import userCrudRoutes from './routes/userRoutes.js'
+import listingRoutes from './routes/listingRoutes.js'
+import adminRoutes from './routes/adminRoutes.js'
 import { WebSocketServer,WebSocket } from 'ws';
 import { userManager } from './common/userManager.js';
 const wss = new WebSocketServer({ port: 8080 });
@@ -13,13 +16,13 @@ ws.on('message',(data:any)=>{
         const roomId=message.roomId
         userManager.getInstance().addUser(uuid,ws,roomId)
     }else if(message.type==="leaveRoom"){
-        userManager.getInstance().removeUser(uuid,message.roomId)
+        userManager.getInstance().leaveRoom(uuid,message.roomId)
     }else if(message.type==="message"){
         try {
-        console.log("mes",message)
-        const dataParse=message.data
-        userManager.getInstance().sendMessage(uuid,dataParse)
-        console.log("data",dataParse)
+            // console.log("mes",message)
+            const dataParse=(message.data)
+            userManager.getInstance().sendMessage(uuid,dataParse)
+            // console.log("data",dataParse)
         } catch (error) {
             console.log("err",error)
         }
@@ -29,15 +32,14 @@ ws.on('message',(data:any)=>{
 })
 });
 const app = express()
-// claude --resume 3d716b9b-a961-45bb-a51b-c7bcb200a70e
-// claude --resume b5b9080a-0230-41fb-90e6-a824d9abbcf6
-// claude --resume f9d73936-fff7-4ba4-9173-1864fc44e71e
 app.use(express.json())
-app.use("/product",userRoutes)
-
+app.use("/buyer", userRoutes)
+app.use("/user", userCrudRoutes)
+app.use("/listings", listingRoutes)
+app.use("/admin",adminRoutes)
 
 app.listen(5102, () => {
-console.log('Server running on port 5102')
+    console.log('Server running on port 5102')
 })
 // {
 //     "type":"join",
