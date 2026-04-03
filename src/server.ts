@@ -7,9 +7,9 @@ import adminRoutes from './routes/adminRoutes.js'
 import { WebSocketServer,WebSocket } from 'ws';
 import { userManager } from './common/userManager.js';
 const wss = new WebSocketServer({ port: 8080 });
-
+let uuid:string
 wss.on('connection', function connection(ws:WebSocket) {
-const uuid=Math.random().toString()
+uuid=Math.random().toString()
 ws.on('message',(data:any)=>{
     const message=JSON.parse(data)
     if(message.type==="join"){
@@ -24,17 +24,28 @@ ws.on('message',(data:any)=>{
         } catch (error) {
             console.log("err",error)
         }
-    }else if(message.type==="close"){
+    }
+    // WRONG WE DONT SEND A TYPE TO CLOSE-- SIMPLE CLOSE THE TAB
+    else if(message.type==="close"){
         userManager.getInstance().killUser(uuid)
-    }else if(message.type==="cancelOrder"){
-        try {
-            userManager.getInstance().UsercancelOrder(uuid,message)
+    }
+    // WE DONT SEND CANCELORDER THING FROM SOCKET-- SHIFT THIS LOGIC TO API
+    // else if(message.type==="cancelOrder"){
+    //     try {
+    //         userManager.getInstance().UsercancelOrder(uuid,message)
+    //     } catch (error) {
+    //         console.log("err",error)
+    //     }
+    // }
+})
+});
+wss.on('disconnect',(ws:WebSocket)=>{
+    try {
+        userManager.getInstance().killUser(uuid)
         } catch (error) {
             console.log("err",error)
         }
-    }
 })
-});
 const app = express()
 app.use(express.json())
 app.use("/buyer", userRoutes)

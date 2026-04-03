@@ -39,6 +39,7 @@ export class userManager{
     }
     public killUser(uuid:string){
         try {
+            // ADD CLOSE TAB EVENT LISTENER -- socket will end and hence we can remove
             const removeUser=this.userRoomSessions.set(uuid,[]);
         } catch (error) {
             console.log("err killUser",error)
