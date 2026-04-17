@@ -44,6 +44,8 @@ export class redisManager{
         try {
             const minPrice=await prisma.product.findUnique({
                 where:{
+                    // we are assuming each product will have its own room and 
+                    // that room is what we fetch the price from for that product
                     roomId
                 },select:{
                     minPrice:true
@@ -149,7 +151,7 @@ export class redisManager{
 
     public async cancelOrder(uuid:string,orderId:string,roomId:string){
         try{
-            // order can send one order until it fullfills 
+            // user can send one order until it fullfills 
             // else cancel that and send another one
             // removing the first occurence from left of the order 
             // console.log(data)

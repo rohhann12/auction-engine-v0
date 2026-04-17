@@ -19,7 +19,7 @@ export class userManager{
     public addUser(uuid:string,connection:WebSocket,roomId:string){
         try {
             console.log("this.users before appending",this.userRoomSessions)
-            this.userRoomSessions.set(uuid,[roomId])
+            this.userRoomSessions.set(uuid,[...roomId,roomId])
             console.log("this.users after appending",this.userRoomSessions)
         } catch (error) {
             console.log("err addUser",error)
@@ -40,6 +40,7 @@ export class userManager{
     public killUser(uuid:string){
         try {
             // ADD CLOSE TAB EVENT LISTENER -- socket will end and hence we can remove
+            const getAllRooms=this.userRoomSessions.get(uuid)
             const removeUser=this.userRoomSessions.set(uuid,[]);
         } catch (error) {
             console.log("err killUser",error)

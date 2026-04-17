@@ -46,6 +46,7 @@ wss.on('disconnect',(ws:WebSocket)=>{
             console.log("err",error)
         }
 })
+
 const app = express()
 app.use(express.json())
 app.use("/buyer", userRoutes)
