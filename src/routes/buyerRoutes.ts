@@ -1,5 +1,5 @@
 import express from 'express'
-import prisma from '../common/prismaInit.js'
+import prisma from '../config/prisma.js'
 import { redisManager } from '../common/redisManager.js'
 
 const route = express.Router()
@@ -15,6 +15,7 @@ route.get("/", async (req: any, res: any) => {
 })
 
 // GET single product
+// connect to socket relay over the information
 route.get("/:roomId", async (req: any, res: any) => {
     try {
         const details = await prisma.product.findUnique({ where: { roomId: req.params.roomId } })
@@ -41,10 +42,11 @@ route.post("/:roomId/order", async (req: any, res: any) => {
         const roomId = req.params.roomId
         const { price, productName, buyerId, buyerName, ownerId, ownerName,orderId } = req.body
         const pushOrder = await redisManager.getInstance().addOrder(orderId,productName, roomId, price, buyerId, buyerName, ownerId, ownerName)
+        console.log("pushorder",pushOrder)
         if (!pushOrder) {
-            res.status(200).json({ message: "order not placed" })
+            res.status(200).json({ message: "order not accepted" })
         } else {
-            res.status(201).json({ message: "order placed" })
+            res.status(201).json({ message: "order accepted" })
         }
     } catch (error) {
         res.status(500).json({ message: "failed to place order", error })

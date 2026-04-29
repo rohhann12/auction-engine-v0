@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -b && cp src/generated/prisma/index.js src/generated/prisma/index-browser.js src/generated/prisma/default.js src/generated/prisma/edge.js src/generated/prisma/query_engine_bg.js src/generated/prisma/wasm.js src/generated/prisma/query_engine_bg.wasm src/generated/prisma/libquery_engine-darwin-arm64.dylib.node src/generated/prisma/package.json dist/generated/prisma/ && cp -r src/generated/prisma/runtime dist/generated/prisma/",
-    "seed": "npx tsx src/prisma/seed.ts"
+    "seed": "npx tsx src/prisma/seed.ts",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec tsx src/server.ts --ext ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
@@ -32,6 +34,8 @@
     "ws": "^8.19.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.6"
+    "@types/express": "^5.0.6",
+    "nodemon": "^3.1.14",
+    "tsx": "^4.21.0"
   }
 }

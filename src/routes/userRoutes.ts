@@ -1,5 +1,5 @@
 import express from 'express'
-import prisma from '../common/prismaInit.js'
+import prisma from '../config/prisma.js'
 
 const route = express.Router()
 
@@ -53,6 +53,7 @@ route.put("/:id", async (req: any, res: any) => {
                 ...(isOwner !== undefined && { isOwner })
             }
         })
+        if(!user)return res.status(400).json({ message: "user not found" })
         res.status(200).json(user)
     } catch (error) {
         res.status(500).json({ message: "failed to update user", error })

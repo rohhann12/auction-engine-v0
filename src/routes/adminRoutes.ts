@@ -1,5 +1,5 @@
 import express from 'express'
-import prisma from '../common/prismaInit.js'
+import prisma from '../config/prisma.js'
 import { redisManager } from '../common/redisManager.js'
 
 const route = express.Router()

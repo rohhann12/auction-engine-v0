@@ -37,6 +37,7 @@ export class userManager{
             console.log("err leaveRoom",error)
         }
     }
+    
     public killUser(uuid:string){
         try {
             // ADD CLOSE TAB EVENT LISTENER -- socket will end and hence we can remove
@@ -46,6 +47,7 @@ export class userManager{
             console.log("err killUser",error)
         }
     }
+    
     public async sendMessage(uuid:string,message:Bids){
         // send order to the addOrder in the redisManager where trades happen
         const productname=message.productName
@@ -63,7 +65,8 @@ export class userManager{
             console.log("err",error)
         }
     }
-      public async UsercancelOrder(uuid:string,message:Bids){
+    
+    public async UsercancelOrder(uuid:string,message:Bids){
         // send order to the addOrder in the redisManager where trades happen
         const roomId=message.roomId
         const orderId=message.orderId

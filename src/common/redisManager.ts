@@ -1,13 +1,13 @@
 import type { RedisClientType } from "redis"
 import { createClient } from "redis"
 import type { Bids } from "../types/types.js"
-import prisma from "./prismaInit.js"
+import prisma from "../config/prisma.js"
 export class redisManager{
     private static redisInstance:redisManager
     private client:RedisClientType
     private publisher:RedisClientType
     private room:any
-    private current_price:number
+    private currentPrices:Map<string,number>
     // this is for uuid se kitni bids ayi
     private bids:Map<string,Object>
     private activeWorkers:Map<string,boolean>
@@ -28,7 +28,7 @@ export class redisManager{
         }).catch((e)=>{
             console.log("error connecting",e)
         })
-        this.current_price=0
+        this.currentPrices=new Map()
         this.bids=new Map()
         this.activeWorkers=new Map()
     }
@@ -53,7 +53,7 @@ export class redisManager{
             })
             console.log("[lol]",minPrice)
             if(minPrice){
-                this.current_price=minPrice.minPrice
+                this.currentPrices.set(roomId,minPrice.minPrice)
                 console.log("[lol] changing the price",minPrice)
             }
             if(!this.activeWorkers.get(roomId)){
@@ -78,10 +78,12 @@ export class redisManager{
                 if(data){
                     flag=await this.matchOrder(JSON.parse(data.element) as Bids,roomId)
                 }
-                if(flag?.flag==false){
+                if(!flag){
                     console.log("order rejected")
+                    return false
                 }else{
                     console.log("order accepted")
+                    return true
                 }
             } catch (error) {
                 console.log("err startWorker",error)
@@ -103,22 +105,26 @@ export class redisManager{
                 ownerName,
                 status
             }
-            if(this.current_price===0){
+            if(!this.currentPrices.has(roomId)){
                 console.log("updating price")
                 await this.auctionStarting(roomId)
-                console.log("updated price",this.current_price)
+                console.log("updated price",this.currentPrices.get(roomId))
+            }
+            const currentPrice=this.currentPrices.get(roomId)
+            if(currentPrice===undefined){
+                return false
+            }
+            if(price<=currentPrice){
+                console.log("order rejected before queueing", { roomId, price, currentPrice })
+                return false
             }
             // here key
             const appendToRedisQueue=await this.client.lPush(`bids:${roomId}`,JSON.stringify(data))
-            console.log("pushed to queue",JSON.stringify(appendToRedisQueue))
-            console.log("matching in progress");
-            // const matchOrder=await this.matchOrder(data,roomId)
-            // console.log("matched",matchOrder)
-            // if(matchOrder.flag){
-            //     return true
-            // }else{
-            //     return false
-            // }
+            console.log("appendToRedisQueue",appendToRedisQueue)
+            if(!appendToRedisQueue){
+                return false
+            }
+            return true
         } catch (error) {
             console.log("err addOrder",error)
             return false
@@ -129,23 +135,24 @@ export class redisManager{
     private async matchOrder(bid:Bids,key:string){
         try {
             const price=bid.price
-            console.log("[current_price]",this.current_price)
-            if(price>this.current_price){
+            const currentPrice=this.currentPrices.get(key) ?? 0
+            console.log("[current_price]",currentPrice)
+            if(price>currentPrice){
                 // stream back to socket to taht user
                 // WE HAVE THE TYPE export type ORDER_REJECTED="ORDER_REJECTED"
                 console.log("state of bid old",this.bids)
                 const a=this.bids.set(key,bid)
-                this.current_price=price
+                this.currentPrices.set(key,price)
                 console.log("state of bid updated",this.bids)
-                return {flag:true}
+                return true
             }else{
                 // WE HAVE THE TYPE export type ORDER_REJECTED="ORDER_REJECTED"
                 // REJECTED="ORDER_REJECTED"
-                return {flag:false}
+                return 
             }
         } catch (error) {
             console.log("err matchOrder",error)
-            return {flag:false}
+            return false
         }
     }
 

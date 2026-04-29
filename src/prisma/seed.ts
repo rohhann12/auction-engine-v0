@@ -75,6 +75,7 @@ async function main() {
       roomId: product1.roomId,
       price: 150,
       userId: buyer1.id,
+      status: "ORDER_PENDING",
     },
   });
 
@@ -83,6 +84,7 @@ async function main() {
       roomId: product2.roomId,
       price: 600,
       userId: buyer2.id,
+      status: "ORDER_PENDING",
     },
   });
 
@@ -91,6 +93,7 @@ async function main() {
       roomId: product3.roomId,
       price: 75,
       userId: buyer1.id,
+      status: "ORDER_PENDING",
     },
   });
 

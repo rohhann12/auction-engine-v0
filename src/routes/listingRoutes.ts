@@ -1,6 +1,6 @@
 import express from 'express'
 import multer from 'multer'
-import prisma from '../common/prismaInit.js'
+import prisma from '../config/prisma.js'
 import { uploadImage, deleteImage } from '../common/s3Manager.js'
 
 const route = express.Router()
