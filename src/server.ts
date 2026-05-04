@@ -5,35 +5,31 @@ import userCrudRoutes from './routes/userRoutes.js'
 import listingRoutes from './routes/listingRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
 import { authMiddleware } from './middleware/auth.js'
-import { WebSocketServer,WebSocket } from 'ws';
-import { userManager } from './common/userManager.js';
-const wss = new WebSocketServer({ port: 8080 });
-let uuid:string
-wss.on('connection', function connection(ws:WebSocket) {
-uuid=Math.random().toString()
-ws.on('message',(data:any)=>{
-    let message: any
-    try {
-        message = JSON.parse(data)
-    } catch {
-        ws.send(JSON.stringify({ error: 'Invalid JSON' }))
-        return
-    }
-    if(message.type==="join"){
-        const roomId=message.roomId
-        userManager.getInstance().addUser(uuid,ws,roomId)
-    }else if(message.type==="leaveRoom"){
-        userManager.getInstance().leaveRoom(uuid,message.roomId)
-    }
-})
-});
-wss.on('disconnect',(ws:WebSocket)=>{
-    try {
-        userManager.getInstance().killUser(uuid)
-        } catch (error) {
-            console.log("err",error)
-        }
-})
+import { socketManager } from './common/socketManager.js'
+// const wss = new WebSocketServer({ port: 8080 });
+// let uuid:string
+// wss.on('connection', function connection(ws:WebSocket) {
+
+// ws.on('message',(data:any)=>{
+//     let message: any
+//     try {
+//         message = JSON.parse(data)
+//     } catch {
+//         ws.send(JSON.stringify({ error: 'Invalid JSON' }))
+//         return
+//     }
+    
+// })
+// });
+// wss.on('disconnect',(ws:WebSocket)=>{
+//     try {
+//         userManager.getInstance().killUser(uuid)
+//         } catch (error) {
+//             console.log("err",error)
+//         }
+// })
+
+socketManager.getInstance().init()
 
 const app = express()
 app.use(express.json())
@@ -59,7 +55,7 @@ const server = app.listen(5102, () => {
 })
 
 function shutdown() {
-    wss.close()
+    // wss.close()
     server.close()
     process.exit(0)
 }

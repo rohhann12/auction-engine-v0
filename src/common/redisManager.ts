@@ -123,16 +123,20 @@ export class redisManager{
                 console.log("order rejected before queueing", { roomId, price, currentPrice })
                 return false
             }
-            // here key
-            const appendToRedisQueue=await this.client.lPush(`bids:${roomId}`,JSON.stringify(data))
-            // console.log("appendToRedisQueue",appendToRedisQueue)
-            if(!appendToRedisQueue){
-                return false
-            }
-            // return true
-            const result=await new Promise((resolve)=>{
-                this.pendingOrder.set(orderId,resolve)
-            })
+            // register resolver BEFORE pushing so Worker always finds it
+            const ORDER_TIMEOUT_MS = 10_000
+            const result = await Promise.race<boolean>([
+                new Promise<boolean>((resolve) => {
+                    this.pendingOrder.set(orderId, resolve)
+                    this.client.lPush(`bids:${roomId}`, JSON.stringify(data))
+                }),
+                new Promise<boolean>((_, reject) =>
+                    setTimeout(() => {
+                        this.pendingOrder.delete(orderId)
+                        reject(new Error(`order timeout: ${orderId}`))
+                    }, ORDER_TIMEOUT_MS)
+                ),
+            ])
             return result
         } catch (error) {
             console.log("err addOrder",error)
@@ -147,19 +151,17 @@ export class redisManager{
             const currentPrice=this.currentPrices.get(key) ?? 0
             console.log("[current_price]",currentPrice)
             if(price>currentPrice){
-                // stream back to socket to taht user
                 console.log("state of bid old",this.bids)
                 const a=this.bids.get(key)??[]
                 this.bids.set(key,[...a,bid])
                 this.currentPrices.set(key,price)
                 console.log("state of bid updated",this.bids)
-                // return true
-               this.pendingOrder.get(bid.orderId)?.(true)
+                this.pendingOrder.get(bid.orderId)?.(true)
+                await this.publisher.publish(`userId:${bid.buyerId}`, JSON.stringify({ status: "accepted", price }))
+                await this.publisher.publish(`room:${key}`, JSON.stringify({ price, buyerName: bid.buyerName }))
             }else{
-                // WE HAVE THE TYPE export type ORDER_REJECTED="ORDER_REJECTED"
-                // REJECTED="ORDER_REJECTED"
-                // return false
-               this.pendingOrder.get(bid.orderId)?.(false)
+                this.pendingOrder.get(bid.orderId)?.(false)
+                await this.publisher.publish(`userId:${bid.buyerId}`, JSON.stringify({ status: "rejected", price, currentPrice }))
             }
             this.pendingOrder.delete(bid.orderId)
         } catch (error) {
@@ -179,10 +181,6 @@ export class redisManager{
         }catch(e){
             console.log("err cancelling order",e)
         }
-    }
-    public async subscribeToPubSub(userId:String){
-        // now here we make it subscribe to the topic of the roomId and 
-        // 
     }
 }
 

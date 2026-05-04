@@ -1,6 +1,7 @@
 import {WebSocket} from 'ws'
 import type { Bids } from "../types/types.js"
 import { redisManager } from "./redisManager.js"
+import { socketManager } from './socketManager.js'
 export class userManager{
     private static instance:userManager
     private userRoomSessions:Map<string,string[]>
@@ -19,6 +20,7 @@ export class userManager{
     public addUser(uuid:string,ws:WebSocket,roomId:string){
         // we are setting an empty array for a user id
         this.userRoomSessions.set(uuid,[])
+        // socketManager.getInstance().subscribeToPubSub(roomId,ws,[])
     }
 
     public leaveRoom(uuid:string,roomId:String){
