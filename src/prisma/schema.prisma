@@ -49,5 +49,7 @@ model product{
   minPrice Int
   ownerId  String
   soldForPrice Int
+  auctionStartsAt DateTime?
+  auctionEndsAt DateTime?
   images        String?
 }

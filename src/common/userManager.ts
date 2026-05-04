@@ -1,4 +1,4 @@
-import WebSocket from "ws"
+import {WebSocket} from 'ws'
 import type { Bids } from "../types/types.js"
 import { redisManager } from "./redisManager.js"
 export class userManager{
@@ -16,14 +16,9 @@ export class userManager{
         return this.instance
     }
 
-    public addUser(uuid:string,connection:WebSocket,roomId:string){
-        try {
-            console.log("this.users before appending",this.userRoomSessions)
-            this.userRoomSessions.set(uuid,[...roomId,roomId])
-            console.log("this.users after appending",this.userRoomSessions)
-        } catch (error) {
-            console.log("err addUser",error)
-        }
+    public addUser(uuid:string,ws:WebSocket,roomId:string){
+        // we are setting an empty array for a user id
+        this.userRoomSessions.set(uuid,[])
     }
 
     public leaveRoom(uuid:string,roomId:String){
@@ -48,23 +43,6 @@ export class userManager{
         }
     }
     
-    public async sendMessage(uuid:string,message:Bids){
-        // send order to the addOrder in the redisManager where trades happen
-        const productname=message.productName
-        const roomId=message.roomId
-        const price=message.price
-        const buyerId=message.buyerId
-        const buyerName=message.buyerName
-        const ownerId=message.ownerId
-        const ownerName=message.ownerName
-        try {
-            const orderId=Math.random().toString()
-            const orderAdd=await redisManager.getInstance().addOrder(orderId,productname,roomId,price,buyerId,buyerName,ownerId,ownerName)
-            console.log("orderAdd",orderAdd)
-        } catch (error) {
-            console.log("err",error)
-        }
-    }
     
     public async UsercancelOrder(uuid:string,message:Bids){
         // send order to the addOrder in the redisManager where trades happen

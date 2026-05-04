@@ -8,11 +8,32 @@ const route = express.Router()
 route.post("/:roomId/start", async (req: any, res: any) => {
     try {
         const { roomId } = req.params
+        const { auctionStartsAt, auctionEndsAt } = req.body
         const listing = await prisma.product.findUnique({ where: { roomId } })
         if (!listing) return res.status(404).json({ message: "listing not found" })
 
+        const parsedAuctionStartsAt = auctionStartsAt ? new Date(auctionStartsAt) : new Date()
+        const parsedAuctionEndsAt = auctionEndsAt ? new Date(auctionEndsAt) : listing.auctionEndsAt
+        if (Number.isNaN(parsedAuctionStartsAt.getTime()) || (parsedAuctionEndsAt && Number.isNaN(parsedAuctionEndsAt.getTime()))) {
+            return res.status(400).json({ message: "invalid auction start or end time" })
+        }
+        if (!parsedAuctionEndsAt) {
+            return res.status(400).json({ message: "auctionEndsAt required to start auction" })
+        }
+        if (parsedAuctionStartsAt >= parsedAuctionEndsAt) {
+            return res.status(400).json({ message: "auctionEndsAt must be after auctionStartsAt" })
+        }
+
+        await prisma.product.update({
+            where: { roomId },
+            data: {
+                auctionStartsAt: parsedAuctionStartsAt,
+                auctionEndsAt: parsedAuctionEndsAt
+            }
+        })
+
         await redisManager.getInstance().auctionStarting(roomId)
-        res.status(200).json({ message: "auction started", roomId })
+        res.status(200).json({ message: "auction started", roomId, auctionStartsAt: parsedAuctionStartsAt, auctionEndsAt: parsedAuctionEndsAt })
     } catch (error) {
         res.status(500).json({ message: "failed to start auction", error })
     }

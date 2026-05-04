@@ -40,8 +40,9 @@ route.get("/:roomId/bids", async (req: any, res: any) => {
 route.post("/:roomId/order", async (req: any, res: any) => {
     try {
         const roomId = req.params.roomId
-        const { price, productName, buyerId, buyerName, ownerId, ownerName,orderId } = req.body
-        const pushOrder = await redisManager.getInstance().addOrder(orderId,productName, roomId, price, buyerId, buyerName, ownerId, ownerName)
+        const { price, productName, buyerId, buyerName, ownerId, ownerName,orderId,timeOrderPlaced } = req.body
+        const pushOrder = await redisManager.getInstance().addOrder(orderId,productName, roomId, price, buyerId, buyerName, ownerId, ownerName,timeOrderPlaced)
+        const subscribeToPubSub=await redisManager.getInstance().subscribeToPubSub(buyerId)
         console.log("pushorder",pushOrder)
         if (!pushOrder) {
             res.status(200).json({ message: "order not accepted" })

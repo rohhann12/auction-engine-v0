@@ -7,7 +7,8 @@ export interface Bids{
     ownerId:string,
     buyerName:string,
     buyerId:string,
-    status:ORDER_ACCEPTED|ORDER_REJECTED|ORDER_PENDING|ORDER_CANCELLED
+    status:ORDER_ACCEPTED|ORDER_REJECTED|ORDER_PENDING|ORDER_CANCELLED,
+    timeOrderPlaced:string
 }
 
 export type ORDER_ACCEPTED="ORDER_ACCEPTED"

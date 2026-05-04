@@ -24,26 +24,7 @@ ws.on('message',(data:any)=>{
         userManager.getInstance().addUser(uuid,ws,roomId)
     }else if(message.type==="leaveRoom"){
         userManager.getInstance().leaveRoom(uuid,message.roomId)
-    }else if(message.type==="message"){
-        try {
-            const dataParse=(message.data)
-            userManager.getInstance().sendMessage(uuid,dataParse)
-        } catch (error) {
-            console.log("err",error)
-        }
     }
-    // WRONG WE DONT SEND A TYPE TO CLOSE-- SIMPLE CLOSE THE TAB
-    else if(message.type==="close"){
-        userManager.getInstance().killUser(uuid)
-    }
-    // WE DONT SEND CANCELORDER THING FROM SOCKET-- SHIFT THIS LOGIC TO API
-    // else if(message.type==="cancelOrder"){
-    //     try {
-    //         userManager.getInstance().UsercancelOrder(uuid,message)
-    //     } catch (error) {
-    //         console.log("err",error)
-    //     }
-    // }
 })
 });
 wss.on('disconnect',(ws:WebSocket)=>{

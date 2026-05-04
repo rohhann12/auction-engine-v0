@@ -45,8 +45,20 @@ route.get("/:roomId", async (req: any, res: any) => {
 route.post("/seller/:ownerId", upload.single("image"), async (req: any, res: any) => {
     try {
         const { ownerId } = req.params
-        const { minPrice } = req.body
+        const { minPrice, auctionStartsAt, auctionEndsAt } = req.body
         if (!minPrice) return res.status(400).json({ message: "minPrice required" })
+        if ((auctionStartsAt && !auctionEndsAt) || (!auctionStartsAt && auctionEndsAt)) {
+            return res.status(400).json({ message: "auctionStartsAt and auctionEndsAt must both be provided" })
+        }
+
+        const parsedAuctionStartsAt = auctionStartsAt ? new Date(auctionStartsAt) : null
+        const parsedAuctionEndsAt = auctionEndsAt ? new Date(auctionEndsAt) : null
+        if ((parsedAuctionStartsAt && Number.isNaN(parsedAuctionStartsAt.getTime())) || (parsedAuctionEndsAt && Number.isNaN(parsedAuctionEndsAt.getTime()))) {
+            return res.status(400).json({ message: "invalid auction start or end time" })
+        }
+        if (parsedAuctionStartsAt && parsedAuctionEndsAt && parsedAuctionStartsAt >= parsedAuctionEndsAt) {
+            return res.status(400).json({ message: "auctionEndsAt must be after auctionStartsAt" })
+        }
 
         const seller = await prisma.user.findUnique({ where: { id: ownerId } })
         if (!seller) return res.status(404).json({ message: "seller not found" })
@@ -58,7 +70,14 @@ route.post("/seller/:ownerId", upload.single("image"), async (req: any, res: any
         }
 
         const listing = await prisma.product.create({
-            data: { minPrice: parseInt(minPrice), ownerId, soldForPrice: parseInt(minPrice), images: imageUrl }
+            data: {
+                minPrice: parseInt(minPrice),
+                ownerId,
+                soldForPrice: parseInt(minPrice),
+                auctionStartsAt: parsedAuctionStartsAt,
+                auctionEndsAt: parsedAuctionEndsAt,
+                images: imageUrl
+            }
         })
         await prisma.user.update({ where: { id: ownerId }, data: { isOwner: true } })
 
@@ -71,8 +90,21 @@ route.post("/seller/:ownerId", upload.single("image"), async (req: any, res: any
 // UPDATE listing
 route.put("/:roomId", upload.single("image"), async (req: any, res: any) => {
     try {
-        const { minPrice } = req.body
+        const { minPrice, auctionStartsAt, auctionEndsAt } = req.body
         const { roomId } = req.params
+
+        if ((auctionStartsAt && !auctionEndsAt) || (!auctionStartsAt && auctionEndsAt)) {
+            return res.status(400).json({ message: "auctionStartsAt and auctionEndsAt must both be provided" })
+        }
+
+        const parsedAuctionStartsAt = auctionStartsAt ? new Date(auctionStartsAt) : undefined
+        const parsedAuctionEndsAt = auctionEndsAt ? new Date(auctionEndsAt) : undefined
+        if ((parsedAuctionStartsAt && Number.isNaN(parsedAuctionStartsAt.getTime())) || (parsedAuctionEndsAt && Number.isNaN(parsedAuctionEndsAt.getTime()))) {
+            return res.status(400).json({ message: "invalid auction start or end time" })
+        }
+        if (parsedAuctionStartsAt && parsedAuctionEndsAt && parsedAuctionStartsAt >= parsedAuctionEndsAt) {
+            return res.status(400).json({ message: "auctionEndsAt must be after auctionStartsAt" })
+        }
 
         let imageUrl: string | null | undefined
         if (req.file) {
@@ -86,6 +118,8 @@ route.put("/:roomId", upload.single("image"), async (req: any, res: any) => {
             where: { roomId },
             data: {
                 ...(minPrice !== undefined && { minPrice: parseInt(minPrice) }),
+                ...(parsedAuctionStartsAt !== undefined && { auctionStartsAt: parsedAuctionStartsAt }),
+                ...(parsedAuctionEndsAt !== undefined && { auctionEndsAt: parsedAuctionEndsAt }),
                 ...(imageUrl !== undefined && { images: imageUrl })
             }
         })

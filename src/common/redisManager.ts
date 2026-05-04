@@ -45,9 +45,10 @@ export class redisManager{
             const minPrice=await prisma.product.findUnique({
                 where:{
                     // we are assuming each product will have its own room and 
-                    // that room is what we fetch the price from for that product
+                    // that room is what we fetch the price from for that p roduct
                     roomId
                 },select:{
+                    // min price is the price the seller has asked for
                     minPrice:true
                 }
             })
@@ -57,6 +58,7 @@ export class redisManager{
                 console.log("[lol] changing the price",minPrice)
             }
             if(!this.activeWorkers.get(roomId)){
+                // having this so one worked is popping thorugh the queue to maintian consistency
                 this.activeWorkers.set(roomId,true)
                 this.Worker(roomId)
             }
@@ -80,10 +82,10 @@ export class redisManager{
                 }
                 if(!flag){
                     console.log("order rejected")
-                    return false
+                    return {flag:false}
                 }else{
                     console.log("order accepted")
-                    return true
+                    return {flag:true}
                 }
             } catch (error) {
                 console.log("err startWorker",error)
@@ -91,7 +93,7 @@ export class redisManager{
         }
     }
     
-    public async addOrder(orderId:string,productName:string,roomId:string,price:number,buyerId:string,buyerName:string,ownerId:string,ownerName:string){
+    public async addOrder(orderId:string,productName:string,roomId:string,price:number,buyerId:string,buyerName:string,ownerId:string,ownerName:string,timeOrderPlaced:string){
         try {
             const status="ORDER_PENDING"
             const data:Bids={
@@ -103,7 +105,8 @@ export class redisManager{
                 buyerName,
                 ownerId,
                 ownerName,
-                status
+                status,
+                timeOrderPlaced
             }
             if(!this.currentPrices.has(roomId)){
                 console.log("updating price")
@@ -139,7 +142,6 @@ export class redisManager{
             console.log("[current_price]",currentPrice)
             if(price>currentPrice){
                 // stream back to socket to taht user
-                // WE HAVE THE TYPE export type ORDER_REJECTED="ORDER_REJECTED"
                 console.log("state of bid old",this.bids)
                 const a=this.bids.set(key,bid)
                 this.currentPrices.set(key,price)
@@ -148,7 +150,7 @@ export class redisManager{
             }else{
                 // WE HAVE THE TYPE export type ORDER_REJECTED="ORDER_REJECTED"
                 // REJECTED="ORDER_REJECTED"
-                return 
+                return false
             }
         } catch (error) {
             console.log("err matchOrder",error)
@@ -168,7 +170,10 @@ export class redisManager{
             console.log("err cancelling order",e)
         }
     }
-
+    public async subscribeToPubSub(userId:String){
+        // now here we make it subscribe to the topic of the roomId and 
+        // 
+    }
 }
 
 // for cancel logic 
