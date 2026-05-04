@@ -7,10 +7,11 @@ export class redisManager{
     private client:RedisClientType
     private publisher:RedisClientType
     private room:any
-    private currentPrices:Map<string,number>
+    private currentPrices:Map<string,number>=new Map()
     // this is for uuid se kitni bids ayi
-    private bids:Map<string,Object>
-    private activeWorkers:Map<string,boolean>
+    private bids:Map<string,Object[]>=new Map()
+    private activeWorkers:Map<string,boolean>=new Map()
+    private pendingOrder:Map<string,(flag:boolean)=>void>=new Map()
     constructor(){
         this.client=createClient({
             url:process.env.REDIS_URL||"redis://localhost:6379"
@@ -28,9 +29,10 @@ export class redisManager{
         }).catch((e)=>{
             console.log("error connecting",e)
         })
-        this.currentPrices=new Map()
-        this.bids=new Map()
-        this.activeWorkers=new Map()
+        // this.currentPrices=new Map()
+        // this.bids=new Map()
+        // this.activeWorkers=new Map()
+        // this.pendingOrder=new Map()
     }
     
     public static getInstance(){
@@ -64,7 +66,7 @@ export class redisManager{
             }
             // flush stale bids left in Redis from previous sessions
             await this.client.del(`bids:${roomId}`)
-            this.bids=new Map()
+            // this.bids=new Map()
         } catch (error) {
             console.log("err auctionStarting",error)
         }
@@ -82,10 +84,10 @@ export class redisManager{
                 }
                 if(!flag){
                     console.log("order rejected")
-                    return {flag:false}
+                    // return {flag:false}
                 }else{
                     console.log("order accepted")
-                    return {flag:true}
+                    // return {flag:true}
                 }
             } catch (error) {
                 console.log("err startWorker",error)
@@ -123,11 +125,15 @@ export class redisManager{
             }
             // here key
             const appendToRedisQueue=await this.client.lPush(`bids:${roomId}`,JSON.stringify(data))
-            console.log("appendToRedisQueue",appendToRedisQueue)
+            // console.log("appendToRedisQueue",appendToRedisQueue)
             if(!appendToRedisQueue){
                 return false
             }
-            return true
+            // return true
+            const result=await new Promise((resolve)=>{
+                this.pendingOrder.set(orderId,resolve)
+            })
+            return result
         } catch (error) {
             console.log("err addOrder",error)
             return false
@@ -143,15 +149,19 @@ export class redisManager{
             if(price>currentPrice){
                 // stream back to socket to taht user
                 console.log("state of bid old",this.bids)
-                const a=this.bids.set(key,bid)
+                const a=this.bids.get(key)??[]
+                this.bids.set(key,[...a,bid])
                 this.currentPrices.set(key,price)
                 console.log("state of bid updated",this.bids)
-                return true
+                // return true
+               this.pendingOrder.get(bid.orderId)?.(true)
             }else{
                 // WE HAVE THE TYPE export type ORDER_REJECTED="ORDER_REJECTED"
                 // REJECTED="ORDER_REJECTED"
-                return false
+                // return false
+               this.pendingOrder.get(bid.orderId)?.(false)
             }
+            this.pendingOrder.delete(bid.orderId)
         } catch (error) {
             console.log("err matchOrder",error)
             return false

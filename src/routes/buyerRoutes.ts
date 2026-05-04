@@ -47,7 +47,7 @@ route.post("/:roomId/order", async (req: any, res: any) => {
         if (!pushOrder) {
             res.status(200).json({ message: "order not accepted" })
         } else {
-            res.status(201).json({ message: "order accepted" })
+            res.status(201).json({ message: "order reached,processing..." })
         }
     } catch (error) {
         res.status(500).json({ message: "failed to place order", error })
